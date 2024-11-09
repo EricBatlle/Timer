@@ -21,6 +21,11 @@ public class TimerService
 
 	public void StartTimer(Timer timer, TimeSpan duration)
 	{
+		if (timer.State == TimerState.Running)
+		{
+			return;
+		}
+
 		timer.Duration = duration;
 		timer.State = TimerState.Running;
 		timer.StartTime = dateTimeProvider.UtcNow;
@@ -28,6 +33,11 @@ public class TimerService
 
 	public void PauseTimer(Timer timer)
 	{
+		if (timer.State == TimerState.Paused)
+		{
+			return;
+		}
+
 		timer.State = TimerState.Paused;
 		timer.PauseStartTime = dateTimeProvider.UtcNow;
 	}

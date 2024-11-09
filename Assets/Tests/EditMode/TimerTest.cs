@@ -154,6 +154,45 @@ public class TimerTest
 	}
 
 	[Test]
+	public void When_TimerFreezed_Then_Paused_Expect_SameRemainingTimeBeforeAndAfterPause()
+	{
+		var timerDuration = 3;
+		var timerFreezeDuration = 3;
+		timer = new Timer(TimeSpan.FromSeconds(timerDuration));
+
+		StartTimer(timer);
+		MoveForwardInTime(1);
+		timerService.FreezeTimer(timer, TimeSpan.FromSeconds(timerFreezeDuration));
+		MoveForwardInTime(1);
+		var remainingTimeBeforePause = timerService.GetTimerRemainingTime(timer);
+		timerService.PauseTimer(timer);
+		MoveForwardInTime(1);
+		var remainingTimeAfterPause = timerService.GetTimerRemainingTime(timer);
+		Assert.AreEqual(remainingTimeBeforePause, remainingTimeAfterPause);
+	}
+
+	[Test]
+	public void When_TimerFreezed_Then_Paused_Then_Resume_Then_PauseAgain_Expect_SameRemainingFreezeTimeBeforeAndAfterSecondPause()
+	{
+		var timerDuration = 3;
+		var timerFreezeDuration = 3;
+		timer = new Timer(TimeSpan.FromSeconds(timerDuration));
+
+		StartTimer(timer);
+		MoveForwardInTime(1);
+		timerService.FreezeTimer(timer, TimeSpan.FromSeconds(timerFreezeDuration));
+		MoveForwardInTime(1);
+		PauseMoveForwardInTimeAndResumeTimer(timer, 1);
+		MoveForwardInTime(1);
+		var remainingTimeBeforePause = timerService.GetElapsedFreezeTime(timer);
+		timerService.PauseTimer(timer);
+		MoveForwardInTime(1);
+		var remainingTimeAfterPause = timerService.GetElapsedFreezeTime(timer);
+
+		Assert.AreEqual(remainingTimeBeforePause, remainingTimeAfterPause);
+	}
+
+	[Test]
 	public void When_TimerFreezed_Then_Paused_Then_TryDefrostWithoutPreviousResume_Expect_TimerNotRunning()
 	{
 		var timerDuration = 3;

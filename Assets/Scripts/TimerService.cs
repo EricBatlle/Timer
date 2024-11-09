@@ -9,16 +9,21 @@ public class TimerService
 		this.dateTimeProvider = dateTimeProvider;
 	}
 
-	public void StartTimer(Timer timer)
+	public void ResetTimer(ref Timer timer)
 	{
-		timer.State = TimerState.Running;
-		timer.StartTime = dateTimeProvider.UtcNow;
+		timer = new Timer(timer.Duration);
 	}
 
-	//ToDo: Stop Timer
-	public void StopTimer(Timer timer)
+	public void StartTimer(Timer timer)
 	{
+		StartTimer(timer, timer.Duration);
+	}
 
+	public void StartTimer(Timer timer, TimeSpan duration)
+	{
+		timer.Duration = duration;
+		timer.State = TimerState.Running;
+		timer.StartTime = dateTimeProvider.UtcNow;
 	}
 
 	public void PauseTimer(Timer timer)
@@ -29,7 +34,7 @@ public class TimerService
 
 	public void ResumeTimer(Timer timer)
 	{
-		if(timer.State != TimerState.Paused)
+		if (timer.State != TimerState.Paused)
 		{
 			return;
 		}
@@ -44,7 +49,7 @@ public class TimerService
 
 	public void FreezeTimer(Timer timer, TimeSpan freezeDuration)
 	{
-		if(timer.State == TimerState.Freeze)
+		if (timer.State == TimerState.Freeze || timer.State == TimerState.Paused)
 		{
 			return;
 		}
@@ -52,6 +57,7 @@ public class TimerService
 		timer.State = TimerState.Freeze;
 		timer.FreezeDuration = freezeDuration;
 		timer.FreezeStartTime = dateTimeProvider.UtcNow;
+		timer.TotalPausedDuringFreezedTime = TimeSpan.Zero;
 	}
 
 	public void DefrostTimer(Timer timer)
@@ -70,9 +76,15 @@ public class TimerService
 
 	public TimeSpan GetTimerRemainingTime(Timer timer)
 	{
+		if (timer.State == TimerState.Default)
+		{
+			return timer.Duration;
+		}
+
 		var timerDurationWithWaitings = timer.Duration + GetTotalElapsedPausedTime(timer) + GetTotalElapsedFreezeTime(timer);
 		var timedElapsedFromStart = dateTimeProvider.UtcNow - timer.StartTime;
-		return timerDurationWithWaitings - timedElapsedFromStart;
+		var remainingTime = timerDurationWithWaitings - timedElapsedFromStart;
+		return remainingTime <= TimeSpan.Zero ? TimeSpan.Zero : remainingTime;
 	}
 
 	public TimeSpan GetTotalElapsedPausedTime(Timer timer)
@@ -97,7 +109,7 @@ public class TimerService
 
 	public TimeSpan GetTotalElapsedFreezeTime(Timer timer)
 	{
-		if (timer.State == TimerState.Freeze)
+		if (timer.State == TimerState.Freeze || timer.State == TimerState.Paused)
 		{
 			return timer.TotalFreezedTime + GetElapsedFreezeTime(timer);
 		}
@@ -112,9 +124,9 @@ public class TimerService
 			return dateTimeProvider.UtcNow - timer.TotalPausedDuringFreezedTime - timer.FreezeStartTime;
 		}
 
-		if (timer.State == TimerState.Paused)
+		if (timer.PreviousState == TimerState.Freeze && timer.State == TimerState.Paused)
 		{
-			return dateTimeProvider.UtcNow - GetElapsedPausedTime(timer) - timer.FreezeStartTime;
+			return dateTimeProvider.UtcNow - GetElapsedPausedTime(timer) - timer.TotalPausedDuringFreezedTime - timer.FreezeStartTime;
 		}
 
 		return TimeSpan.Zero;

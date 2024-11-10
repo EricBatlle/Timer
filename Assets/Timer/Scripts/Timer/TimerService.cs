@@ -83,6 +83,7 @@ namespace TimerModule
 			{
 				timer.State = TimerState.Running;
 				timer.TotalFreezedTime += timer.FreezeDuration;
+				timer.FreezeDuration = TimeSpan.Zero;
 			}
 		}
 

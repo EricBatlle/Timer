@@ -24,7 +24,7 @@ Check the example video below for better understanding.
 
 ## Example 🎬
 <p>
-  <img src="TimerExample.gif" alt="simple video gif" width="108" height="135"/>
+  <img src="TimerExample.gif" alt="simple video gif" width="206" height="270"/>
 </p>
 
 *This video demonstrates a SampleScene containing a TimerView that showcases pausing, freezing, and both in combination.*

@@ -1,9 +1,9 @@
 {
-    "name": "Scripts",
-    "rootNamespace": "",
+    "name": "TimerSampleScene",
+    "rootNamespace": "TimerSampleScene",
     "references": [
-        "GUID:9a88817da2cdeb94388ab1c4165583ac",
-        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:48c170158951bb54eb70c5ae727b0ea9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

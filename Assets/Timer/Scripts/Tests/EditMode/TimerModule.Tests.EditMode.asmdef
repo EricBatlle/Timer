@@ -1,11 +1,11 @@
 {
-    "name": "EditMode",
-    "rootNamespace": "",
+    "name": "TimerModule.Tests.EditMode",
+    "rootNamespace": "TimerModule.Tests.EditMode",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Scripts",
-        "TNRD.NSubstitute"
+        "TNRD.NSubstitute",
+        "TimerModule"
     ],
     "includePlatforms": [
         "Editor"

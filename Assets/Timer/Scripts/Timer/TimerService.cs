@@ -4,6 +4,8 @@ namespace TimerModule
 {
 	public class TimerService
 	{
+		public Action<Timer> TimerStateChanged;
+
 		private readonly IDateTimeProvider dateTimeProvider;
 
 		public TimerService(IDateTimeProvider dateTimeProvider)
@@ -14,6 +16,7 @@ namespace TimerModule
 		public void ResetTimer(ref Timer timer)
 		{
 			timer = new Timer(timer.Duration);
+			TimerStateChanged?.Invoke(timer);
 		}
 
 		public void StartTimer(Timer timer)
@@ -29,19 +32,34 @@ namespace TimerModule
 			}
 
 			timer.Duration = duration;
+			timer.FreezeDuration = TimeSpan.Zero;
 			timer.State = TimerState.Running;
 			timer.StartTime = dateTimeProvider.UtcNow;
+			TimerStateChanged?.Invoke(timer);
+		}
+
+		public void StopTimer(Timer timer)
+		{
+			if (timer.State == TimerState.Stopped)
+			{
+				return;
+			}
+
+			timer.State = TimerState.Stopped;
+			timer.StopTime = dateTimeProvider.UtcNow;
+			TimerStateChanged?.Invoke(timer);
 		}
 
 		public void PauseTimer(Timer timer)
 		{
-			if (timer.State == TimerState.Paused)
+			if (timer.State == TimerState.Paused || timer.State == TimerState.Stopped)
 			{
 				return;
 			}
 
 			timer.State = TimerState.Paused;
 			timer.PauseStartTime = dateTimeProvider.UtcNow;
+			TimerStateChanged?.Invoke(timer);
 		}
 
 		public void ResumeTimer(Timer timer)
@@ -57,11 +75,12 @@ namespace TimerModule
 			{
 				timer.TotalPausedDuringFreezedTime += timer.GetLastPauseTime;
 			}
+			TimerStateChanged?.Invoke(timer);
 		}
 
 		public void FreezeTimer(Timer timer, TimeSpan freezeDuration)
 		{
-			if (timer.State == TimerState.Freeze || timer.State == TimerState.Paused)
+			if (timer.State == TimerState.Freeze || timer.State == TimerState.Paused || timer.State == TimerState.Stopped)
 			{
 				return;
 			}
@@ -70,6 +89,7 @@ namespace TimerModule
 			timer.FreezeDuration = freezeDuration;
 			timer.FreezeStartTime = dateTimeProvider.UtcNow;
 			timer.TotalPausedDuringFreezedTime = TimeSpan.Zero;
+			TimerStateChanged?.Invoke(timer);
 		}
 
 		public void DefrostTimer(Timer timer)
@@ -84,6 +104,7 @@ namespace TimerModule
 				timer.State = TimerState.Running;
 				timer.TotalFreezedTime += timer.FreezeDuration;
 				timer.FreezeDuration = TimeSpan.Zero;
+				TimerStateChanged?.Invoke(timer);
 			}
 		}
 
@@ -94,6 +115,14 @@ namespace TimerModule
 				return timer.Duration;
 			}
 
+			if (timer.State == TimerState.Stopped)
+			{
+				var a = GetTotalElapsedPausedTime(timer);
+				var b = GetTotalElapsedFreezeTime(timer);
+				var timerDurationUntilStopWithWaitings = (timer.StopTime - timer.StartTime) - GetTotalElapsedPausedTime(timer) - GetTotalElapsedFreezeTime(timer);
+				return timer.Duration - timerDurationUntilStopWithWaitings;
+			}
+
 			var timerDurationWithWaitings = timer.Duration + GetTotalElapsedPausedTime(timer) + GetTotalElapsedFreezeTime(timer);
 			var timedElapsedFromStart = dateTimeProvider.UtcNow - timer.StartTime;
 			var remainingTime = timerDurationWithWaitings - timedElapsedFromStart;
@@ -102,7 +131,7 @@ namespace TimerModule
 
 		public TimeSpan GetTotalElapsedPausedTime(Timer timer)
 		{
-			if (timer.State == TimerState.Paused)
+			if (timer.State == TimerState.Paused || timer.State == TimerState.Stopped)
 			{
 				return timer.TotalPausedTime + GetElapsedPausedTime(timer);
 			}
@@ -117,12 +146,17 @@ namespace TimerModule
 				return dateTimeProvider.UtcNow - timer.PauseStartTime;
 			}
 
+			if (timer.PreviousState == TimerState.Paused && timer.State == TimerState.Stopped)
+			{
+				return timer.StopTime - timer.PauseStartTime;
+			}
+
 			return TimeSpan.Zero;
 		}
 
 		public TimeSpan GetTotalElapsedFreezeTime(Timer timer)
 		{
-			if (timer.State == TimerState.Freeze || timer.State == TimerState.Paused)
+			if (timer.State == TimerState.Freeze || timer.State == TimerState.Paused || timer.State == TimerState.Stopped)
 			{
 				return timer.TotalFreezedTime + GetElapsedFreezeTime(timer);
 			}
@@ -140,6 +174,12 @@ namespace TimerModule
 			if (timer.PreviousState == TimerState.Freeze && timer.State == TimerState.Paused)
 			{
 				return dateTimeProvider.UtcNow - GetElapsedPausedTime(timer) - timer.TotalPausedDuringFreezedTime - timer.FreezeStartTime;
+			}
+
+			if (timer.PreviousState == TimerState.Freeze && timer.State == TimerState.Stopped)
+			{
+				return timer.StopTime - GetElapsedPausedTime(timer) - timer.TotalPausedDuringFreezedTime - timer.FreezeStartTime;
+
 			}
 
 			return TimeSpan.Zero;

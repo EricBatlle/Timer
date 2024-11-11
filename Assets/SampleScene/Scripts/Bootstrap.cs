@@ -27,6 +27,7 @@ namespace TimerSampleScene
 			timer = new Timer(TimeSpan.FromSeconds(3));
 
 			timerViewControls.TimerStarted += (duration) => timerService.StartTimer(timer, TimeSpan.FromSeconds(duration));
+			timerViewControls.TimerStopped += () => timerService.StopTimer(timer);
 			timerViewControls.TimerPaused += () => timerService.PauseTimer(timer);
 			timerViewControls.TimerResumed += () => timerService.ResumeTimer(timer);
 			timerViewControls.TimerReset += () => timerService.ResetTimer(ref timer);

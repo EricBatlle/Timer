@@ -6,5 +6,6 @@
 		Running,
 		Paused,
 		Freeze,
+		Stopped,
 	}
 }

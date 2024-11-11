@@ -195,6 +195,63 @@ namespace TimerModule.Tests.EditMode
 		}
 
 		[Test]
+		public void When_TimerStarted_Then_Stopped_Expect_CorrectRemainingTime()
+		{
+			var timerDuration = 3;
+			timer = new Timer(TimeSpan.FromSeconds(timerDuration));
+
+			StartTimer(timer);
+			MoveForwardInTime(1);
+			timerService.StopTimer(timer);
+			MoveForwardInTime(1);
+
+			var remainingTime = timerService.GetTimerRemainingTime(timer);
+
+			Assert.AreEqual(timerDuration - 1, remainingTime.TotalSeconds);
+		}
+
+		[Test]
+		public void When_TimerStarted_Then_Freezed_Then_Stopped_Expect_CorrectRemainingTime()
+		{
+			var timerDuration = 3;
+			var timerFreezeDuration = 3;
+
+			timer = new Timer(TimeSpan.FromSeconds(timerDuration));
+
+			StartTimer(timer);
+			MoveForwardInTime(1);
+			timerService.FreezeTimer(timer, TimeSpan.FromSeconds(timerFreezeDuration));
+			MoveForwardInTime(1);
+			timerService.StopTimer(timer);
+			MoveForwardInTime(1);
+
+			var remainingTime = timerService.GetTimerRemainingTime(timer);
+
+			Assert.AreEqual(timerDuration - 1, remainingTime.TotalSeconds);
+		}
+		
+		[Test]
+		public void When_TimerStarted_Then_Freezed_Then_Paused_Then_Resume_Then_Stopped_Expect_CorrectRemainingTime()
+		{
+			var timerDuration = 3;
+			var timerFreezeDuration = 3;
+
+			timer = new Timer(TimeSpan.FromSeconds(timerDuration));
+
+			StartTimer(timer);
+			MoveForwardInTime(1);
+			timerService.FreezeTimer(timer, TimeSpan.FromSeconds(timerFreezeDuration));
+			MoveForwardInTime(1);
+			PauseMoveForwardInTimeAndResumeTimer(timer, 1);
+			timerService.StopTimer(timer);
+			MoveForwardInTime(1);
+
+			var remainingTime = timerService.GetTimerRemainingTime(timer);
+
+			Assert.AreEqual(timerDuration - 1, remainingTime.TotalSeconds);
+		}
+
+		[Test]
 		public void When_TimerFreezed_Then_Paused_Then_TryDefrostWithoutPreviousResume_Expect_TimerNotRunning()
 		{
 			var timerDuration = 3;

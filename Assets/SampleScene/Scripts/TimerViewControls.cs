@@ -8,7 +8,11 @@ namespace TimerSampleScene
 	public class TimerViewControls : MonoBehaviour
 	{
 		[SerializeField]
+		private Button resetButton;
+		[SerializeField]
 		private Button startButton;
+		[SerializeField]
+		private Button stopButton;
 		[SerializeField]
 		private TMP_InputField duration;
 		[SerializeField]
@@ -16,13 +20,12 @@ namespace TimerSampleScene
 		[SerializeField]
 		private Button resumeButton;
 		[SerializeField]
-		private Button resetButton;
-		[SerializeField]
 		private Button freezeButton;
 		[SerializeField]
 		private TMP_InputField freezeDuration;
 
 		public Action<float> TimerStarted;
+		public Action TimerStopped;
 		public Action TimerPaused;
 		public Action TimerResumed;
 		public Action TimerReset;
@@ -31,6 +34,7 @@ namespace TimerSampleScene
 		private void Awake()
 		{
 			startButton.onClick.AddListener(() => TimerStarted?.Invoke(float.Parse(duration.text)));
+			stopButton.onClick.AddListener(() => TimerStopped?.Invoke());
 			pauseButton.onClick.AddListener(() => TimerPaused?.Invoke());
 			resumeButton.onClick.AddListener(() => TimerResumed?.Invoke());
 			resetButton.onClick.AddListener(() => TimerReset?.Invoke());

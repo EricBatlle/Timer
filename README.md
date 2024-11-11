@@ -10,6 +10,7 @@ And that's what this timer does.*
 
 ## Features ⏱️
 - Reset Timer
+- Stop Timer
 - Start Timer
 - Pause Timer
 - Resume Timer

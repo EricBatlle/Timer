@@ -117,8 +117,6 @@ namespace TimerModule
 
 			if (timer.State == TimerState.Stopped)
 			{
-				var a = GetTotalElapsedPausedTime(timer);
-				var b = GetTotalElapsedFreezeTime(timer);
 				var timerDurationUntilStopWithWaitings = (timer.StopTime - timer.StartTime) - GetTotalElapsedPausedTime(timer) - GetTotalElapsedFreezeTime(timer);
 				return timer.Duration - timerDurationUntilStopWithWaitings;
 			}

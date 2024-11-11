@@ -23,6 +23,7 @@ namespace TimerSampleScene
 		{
 			dateTimeProvider = new DateTimeProvider();
 			timerService = new TimerService(dateTimeProvider);
+			timerService.TimerStateChanged += OnTimerStateChanged;
 
 			timer = new Timer(TimeSpan.FromSeconds(3));
 
@@ -38,14 +39,25 @@ namespace TimerSampleScene
 		{
 			if (timer != null)
 			{
-				timerViewValues.UpdateView(timer, timerService);
-				timerRemainingTimerBar.Fill(GetTimerRemainingTimeNormalized(timer));
-				timerFreezingRemainingTimerBar.Fill(GetTimerFreezingRemainingTimeNormalized(timer));
+				if (timerService.GetTimerRemainingTime(timer) <= TimeSpan.Zero)
+				{
+					timerService.StopTimer(timer);
+				}
+
 				if (timerService.IsTimerDefrosted(timer))
 				{
 					timerService.DefrostTimer(timer);
 				}
+
+				timerViewValues.UpdateView(timer, timerService);
+				timerRemainingTimerBar.Fill(GetTimerRemainingTimeNormalized(timer));
+				timerFreezingRemainingTimerBar.Fill(GetTimerFreezingRemainingTimeNormalized(timer));
 			}
+		}
+
+		private void OnTimerStateChanged(Timer timer)
+		{
+			Debug.LogWarning($"Timer state changed: \n{timer.PreviousState} --> {timer.State}");
 		}
 
 		private float GetTimerRemainingTimeNormalized(Timer timer)

@@ -5,7 +5,7 @@
 		Default,
 		Running,
 		Paused,
-		Freeze,
+		Frozen,
 		Stopped,
 	}
 }

@@ -4,7 +4,7 @@ namespace TimerModule
 {
 	public class TimerService
 	{
-		public Action<Timer> TimerStateChanged;
+		public event Action<Timer> TimerStateChanged;
 
 		private readonly IDateTimeProvider dateTimeProvider;
 
@@ -15,7 +15,7 @@ namespace TimerModule
 
 		public void ResetTimer(ref Timer timer)
 		{
-			timer = new Timer(timer.Duration);
+			timer.Reset();
 			TimerStateChanged?.Invoke(timer);
 		}
 
@@ -117,7 +117,7 @@ namespace TimerModule
 
 			if (timer.State == TimerState.Stopped)
 			{
-				var timerDurationUntilStopWithWaitings = (timer.StopTime - timer.StartTime) - GetTotalElapsedPausedTime(timer) - GetTotalElapsedFreezeTime(timer);
+				var timerDurationUntilStopWithWaitings = timer.StopTime - timer.StartTime - GetTotalElapsedPausedTime(timer) - GetTotalElapsedFreezeTime(timer);
 				return timer.Duration - timerDurationUntilStopWithWaitings;
 			}
 
@@ -129,7 +129,7 @@ namespace TimerModule
 
 		public TimeSpan GetTotalElapsedPausedTime(Timer timer)
 		{
-			if (timer.State == TimerState.Paused || timer.State == TimerState.Stopped)
+			if (timer.State is TimerState.Paused or TimerState.Stopped)
 			{
 				return timer.TotalPausedTime + GetElapsedPausedTime(timer);
 			}
@@ -154,7 +154,7 @@ namespace TimerModule
 
 		public TimeSpan GetTotalElapsedFreezeTime(Timer timer)
 		{
-			if (timer.State == TimerState.Frozen || timer.State == TimerState.Paused || timer.State == TimerState.Stopped)
+			if (timer.State is TimerState.Frozen or TimerState.Paused or TimerState.Stopped)
 			{
 				return timer.TotalFreezedTime + GetElapsedFreezeTime(timer);
 			}
@@ -193,6 +193,11 @@ namespace TimerModule
 			var isDefrosted = GetElapsedFreezeTime(timer) >= timer.FreezeDuration;
 
 			return isDefrosted;
+		}
+
+		public bool IsTimerExpired(Timer timer)
+		{
+			return GetTimerRemainingTime(timer) <= TimeSpan.Zero;
 		}
 	}
 }

@@ -39,7 +39,7 @@ namespace TimerSampleScene
 		{
 			if (timer != null)
 			{
-				if (timerService.GetTimerRemainingTime(timer) <= TimeSpan.Zero)
+				if (timerService.IsTimerExpired(timer))
 				{
 					timerService.StopTimer(timer);
 				}

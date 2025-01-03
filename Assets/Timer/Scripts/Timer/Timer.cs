@@ -42,14 +42,41 @@ namespace TimerModule
 
 		public Timer(string id, TimeSpan duration)
 		{
-			this.Id = id;
-			this.Duration = duration;
+			Id = id;
+			Duration = duration;
+		}
+
+		public Timer(Timer timer) : this(timer.Id, timer.Duration)
+		{
+		}
+
+		public Timer(string id) : this(id, TimeSpan.Zero)
+		{
 		}
 
 		public Timer(TimeSpan duration) : this(DefaultId, duration)
 		{
 		}
 
+		public Timer() : this(DefaultId, TimeSpan.Zero)
+		{
+		}
+
 		public TimeSpan GetLastPauseTime => PauseEndTime - PauseStartTime;
+
+		public void Reset()
+		{
+			State = TimerState.Default;
+			PreviousState = TimerState.Default;
+			StartTime = default;
+			StopTime = default;
+			PauseStartTime = default;
+			PauseEndTime = default;
+			FreezeStartTime = default;
+			FreezeDuration = TimeSpan.Zero;
+			TotalPausedTime = TimeSpan.Zero;
+			TotalFreezedTime = TimeSpan.Zero;
+			TotalPausedDuringFreezedTime = TimeSpan.Zero;
+		}
 	}
 }
